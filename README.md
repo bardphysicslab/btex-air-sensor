@@ -1,4 +1,4 @@
-# BardBox Air Node
+# btex-air-sensor
 
 BardBox Air Node is an ESP32-based environmental monitoring platform designed for air quality sensing, environmental data collection, and creative applications.
 
