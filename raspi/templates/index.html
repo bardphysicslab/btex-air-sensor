@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ title }}</title>
+    <style>
+      :root {
+        --bg: #050505;
+        --panel: #111111;
+        --panel-border: #2f2f2f;
+        --text: #f5f5f5;
+        --muted: #a7a7a7;
+        --ok: #52d273;
+        --warn: #ffcf5c;
+        --bad: #ff7b7b;
+        --bard-red: #c9232d;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: system-ui, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+
+      .shell {
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 0 20px 40px;
+      }
+
+      .header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        padding: 18px 0;
+        background: rgba(5, 5, 5, 0.95);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        min-width: 0;
+      }
+
+      .header-left img {
+        height: 48px;
+        width: auto;
+      }
+
+      .header-title {
+        margin: 0;
+        font-size: 26px;
+        line-height: 1.1;
+      }
+
+      .clock {
+        white-space: nowrap;
+        text-align: right;
+        font-size: 17px;
+        color: rgba(255, 255, 255, 0.86);
+      }
+
+      .summary {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 12px 24px;
+        padding: 18px 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .summary strong {
+        color: var(--text);
+      }
+
+      .node-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 14px;
+      }
+
+      .node-card {
+        min-height: 168px;
+        border: 1px solid var(--panel-border);
+        border-radius: 8px;
+        background: var(--panel);
+        padding: 16px;
+      }
+
+      .node-card.error {
+        border-color: var(--bad);
+      }
+
+      .node-card.stale {
+        border-color: var(--warn);
+      }
+
+      .node-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .node-title {
+        min-width: 0;
+      }
+
+      .node-name {
+        overflow-wrap: anywhere;
+        font-size: 18px;
+        font-weight: 700;
+        line-height: 1.2;
+      }
+
+      .node-location,
+      .node-meta {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.3;
+      }
+
+      .status {
+        flex: 0 0 auto;
+        border-radius: 999px;
+        border: 1px solid currentColor;
+        padding: 4px 8px;
+        font-size: 12px;
+        font-weight: 800;
+        line-height: 1;
+        color: var(--ok);
+      }
+
+      .status.stale {
+        color: var(--warn);
+      }
+
+      .status.error,
+      .status.node_unavailable {
+        color: var(--bad);
+      }
+
+      .node-values {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .metric-label {
+        margin-bottom: 4px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .metric-value {
+        min-height: 34px;
+        overflow-wrap: anywhere;
+        font-size: 24px;
+        font-weight: 750;
+        line-height: 1.1;
+      }
+
+      .metric-unit {
+        margin-left: 4px;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 500;
+      }
+
+      .last-seen {
+        margin-top: 14px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .empty {
+        border: 1px solid var(--panel-border);
+        border-radius: 8px;
+        padding: 20px;
+        color: var(--muted);
+        background: var(--panel);
+      }
+
+      @media (max-width: 700px) {
+        .shell {
+          padding: 0 14px 28px;
+        }
+
+        .header {
+          align-items: flex-start;
+        }
+
+        .header-left img {
+          height: 40px;
+        }
+
+        .header-title {
+          font-size: 22px;
+        }
+
+        .clock {
+          font-size: 14px;
+        }
+
+        .node-values {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <div class="header">
+        <div class="header-left">
+          <img src="/static/Bard-Web-Logos/bard-logo-red.png" alt="Bard logo" />
+          <h1 class="header-title">{{ title }}</h1>
+        </div>
+        <div class="clock">
+          <div id="clock-local">--:--:--</div>
+          <div id="clock-utc" style="font-size: 12px; color: var(--muted); margin-top: 4px;">UTC --</div>
+        </div>
+      </div>
+
+      <div class="summary">
+        <div><strong id="app_id">{{ app_id }}</strong></div>
+        <div><span id="app_mode">sensor_monitor</span></div>
+        <div><span id="driver_count">0 nodes</span></div>
+        <div>Time: <span id="time_status">system</span></div>
+      </div>
+
+      <div id="node-grid" class="node-grid"></div>
+    </div>
+
+    <script>
+      const pollIntervalMs = {{ poll_interval_ms }};
+
+      function formatValue(value, digits = null) {
+        if (value === null || value === undefined) return "—";
+        return digits === null ? String(value) : Number(value).toFixed(digits);
+      }
+
+      function formatTimestamp(value) {
+        if (!value) return "—";
+        const parsed = new Date(value);
+        if (Number.isNaN(parsed.getTime())) return value;
+        return parsed.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+      }
+
+      function metricTemplate(label, value, unit, digits = null) {
+        const formatted = formatValue(value, digits);
+        const unitHtml = formatted === "—" || !unit ? "" : `<span class="metric-unit">${unit}</span>`;
+        return `
+          <div>
+            <div class="metric-label">${label}</div>
+            <div class="metric-value">${formatted}${unitHtml}</div>
+          </div>
+        `;
+      }
+
+      function renderReadings(readings) {
+        const grid = document.getElementById("node-grid");
+        if (!grid) return;
+        if (!readings.length) {
+          grid.innerHTML = '<div class="empty">No nodes configured.</div>';
+          return;
+        }
+
+        grid.replaceChildren(...readings.map((reading) => {
+          const status = reading.status || "error";
+          const data = reading.data || {};
+          const extended = reading.extended || {};
+          const card = document.createElement("article");
+          card.className = `node-card ${status === "ok" ? "" : status}`;
+
+          card.innerHTML = `
+            <div class="node-head">
+              <div class="node-title">
+                <div class="node-name">${reading.uid || "Unknown node"}</div>
+                <div class="node-location">${reading.message || "BardBox node"}</div>
+                <div class="node-meta">UID ${reading.uid || "unknown"}</div>
+              </div>
+              <div class="status ${status}">${status === "node_unavailable" ? "ERROR" : status.toUpperCase()}</div>
+            </div>
+            <div class="node-values">
+              ${metricTemplate("Temp", data.temp_c, "°C", 2)}
+              ${metricTemplate("RH", data.rh_pct, "%", 2)}
+              ${metricTemplate("Pressure", data.press_pa, "Pa", 0)}
+            </div>
+            <div class="last-seen">Last seen: ${formatTimestamp(extended.last_seen)}</div>
+          `;
+          return card;
+        }));
+      }
+
+      async function refreshTime() {
+        const r = await fetch("/time");
+        const j = await r.json();
+        document.getElementById("clock-local").textContent = j.local || "—";
+        document.getElementById("clock-utc").textContent = `UTC ${j.utc || "—"}`;
+        document.getElementById("time_status").textContent = j.time_status?.source || "unknown";
+      }
+
+      async function refreshInfo() {
+        const [infoR, driversR] = await Promise.all([fetch("/app/info"), fetch("/drivers")]);
+        const info = await infoR.json();
+        const drivers = await driversR.json();
+        document.getElementById("app_id").textContent = info.app_id || "—";
+        document.getElementById("app_mode").textContent = info.mode || "—";
+        document.getElementById("driver_count").textContent = `${drivers.drivers?.length ?? 0} nodes`;
+      }
+
+      async function refreshReadings() {
+        const r = await fetch("/readings/latest");
+        const j = await r.json();
+        renderReadings(j.readings || []);
+      }
+
+      async function tick() {
+        try {
+          await Promise.all([refreshTime(), refreshInfo(), refreshReadings()]);
+        } catch (err) {
+          console.error("Dashboard refresh failed", err);
+        }
+      }
+
+      tick();
+      setInterval(tick, pollIntervalMs);
+    </script>
+  </body>
+</html>
