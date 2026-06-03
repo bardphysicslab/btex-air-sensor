@@ -5,14 +5,14 @@
 #include <Adafruit_ST7789.h>
 #include <Adafruit_BME680.h>
 #include <Adafruit_SCD30.h>
-#include "Adafruit_LC709203F.h"
+#include <Adafruit_MAX1704X.h>
 
 #define NODE_UID "bb-btex-air-001-1"
 
 Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
 Adafruit_BME680 bme;
 Adafruit_SCD30 scd30;
-Adafruit_LC709203F battery;
+Adafruit_MAX17048 maxlipo;
 
 bool bme_ok = false;
 bool scd_ok = false;
@@ -47,9 +47,9 @@ void setupTFT() {
 }
 
 void setupBattery() {
-  Serial.println("Initializing LC709203F battery monitor at 0x36...");
+  Serial.println("Initializing MAX17048 battery monitor at 0x36...");
 
-  battery_ok = battery.begin(&Wire);
+  battery_ok = maxlipo.begin();
 
   if (!battery_ok) {
     Serial.println("Battery monitor FAIL");
@@ -57,9 +57,6 @@ void setupBattery() {
   }
 
   Serial.println("Battery monitor OK");
-
-  // Best available preset. Your pack is 10050 mAh, but the library uses broad profiles.
-  battery.setPackSize(LC709203F_APA_3000MAH);
 }
 
 void setupBME688() {
@@ -147,11 +144,13 @@ void loop() {
   int y = 90;
 
   if (battery_ok) {
-    float batt_v = battery.cellVoltage();
-    float batt_pct = battery.cellPercent();
+    float batt_v = maxlipo.cellVoltage();
+    float batt_pct = maxlipo.cellPercent();
+    float batt_rate = maxlipo.chargeRate();
 
     Serial.printf("Battery Voltage: %.3f V\n", batt_v);
     Serial.printf("Battery Percent: %.1f %%\n", batt_pct);
+    Serial.printf("Battery Rate:    %.2f %%/hr\n", batt_rate);
 
     tft.setCursor(8, y);
     tft.printf("Batt %.2fV %.0f%%", batt_v, batt_pct);
