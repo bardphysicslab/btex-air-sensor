@@ -12,3 +12,20 @@ Current sensors include:
 - Additional VOC and gas sensors (experimental)
 
 Project Status: Prototype Development
+
+## BardBox Operations
+
+Preview configuration synchronization after pulling source updates:
+
+```bash
+python3 scripts/sync_app_config.py
+```
+
+Apply the reviewed merge with:
+
+```bash
+python3 scripts/sync_app_config.py --write
+```
+
+The canonical BardBox synchronizer recursively adds new example fields while
+preserving deployment values, secrets, and unknown local fields.
